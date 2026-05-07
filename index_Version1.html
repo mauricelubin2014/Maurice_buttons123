@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Custom Speak Buttons — English & Hebrew</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;line-height:1.35}
+    body{max-width:900px;margin:28px auto;padding:20px}
+    h1{margin:0 0 12px;font-size:1.4rem}
+    .panel{border:1px solid #ddd;border-radius:8px;padding:12px;margin-bottom:14px;background:#fafafa}
+    label{display:block;font-size:0.9rem;margin:8px 0 4px}
+    input[type="text"],select{width:100%;padding:8px;border:1px solid #ccc;border-radius:6px}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    .row > *{flex:1 1 180px}
+    button{padding:8px 12px;border-radius:6px;border:1px solid #3b82f6;background:#3b82f6;color:white;cursor:pointer}
+    button.ghost{background:white;color:#333;border-color:#bbb}
+    .buttons-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+    .btn-card{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid #e2e8f0;background:white;min-width:180px;max-width:320px}
+    .btn-card .label{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .btn-card.hebrew .label{direction:rtl;text-align:right}
+    .btn-actions{display:flex;gap:6px}
+    .small{padding:6px 8px;font-size:0.9rem}
+    .muted{color:#666;font-size:0.85rem;margin-top:6px}
+    .voice-preview{display:inline-block;margin-left:8px}
+    .help{font-size:0.9rem;color:#444;margin-bottom:8px}
+    footer{margin-top:20px;color:#666;font-size:0.85rem}
+  </style>
+</head>
+<body>
+  <h1>Custom Speak Buttons (English & Hebrew)</h1>
+
+  <div class="panel" id="createPanel">
+    <div class="help">Type label text, pick a language and voice, then click Add Button. Buttons are saved in your browser.</div>
+
+    <label for="textInput">Text</label>
+    <input id="textInput" type="text" placeholder="Type something (e.g., שלום / Hello)" />
+
+    <div class="row" style="margin-top:8px">
+      <div>
+        <label for="langSelect">Language</label>
+        <select id="langSelect">
+          <option value="en-US">English (en-US)</option>
+          <option value="he-IL">Hebrew (he-IL)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="voiceSelect">Voice</label>
+        <select id="voiceSelect"><option>Loading voices…</option></select>
+      </div>
+    </div>
+
+    <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+      <button id="addBtn" class="small">Add Button</button>
+      <button id="playPreview" class="small ghost">Play Preview</button>
+      <div id="previewInfo" class="muted" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <strong>Your Buttons</strong>
+      <div class="muted" id="countDisplay">0</div>
+    </div>
+
+    <div id="buttonsGrid" class="buttons-grid" aria-live="polite" style="margin-top:10px"></div>
+
+    <div class="muted" style="margin-top:8px">Tip: On some mobile browsers speech is only allowed after a user gesture (tap).</div>
+  </div>
+
+  <footer>
+    Want more features? I can show how to export/import buttons, or make this a PWA/Electron app for offline/device usage.
+  </footer>
+
+  <script>
+    // ====== Data & storage ======
+    const STORAGE_KEY = 'customSpeakButtons_v1';
+    let customButtons = []; // {id, text, lang, voiceURI}
+
+    // ====== DOM ======
+    const textInput = document.getElementById('textInput');
+    const langSelect = document.getElementById('langSelect');
+    const voiceSelect = document.getElementById('voiceSelect');
+    const addBtn = document.getElementById('addBtn');
+    const playPreview = document.getElementById('playPreview');
+    const previewInfo = document.getElementById('previewInfo');
+    const buttonsGrid = document.getElementById('buttonsGrid');
+    const countDisplay = document.getElementById('countDisplay');
+
+    // ====== Speech voices ======
+    let voices = [];
+
+    function loadVoices() {
+      voices = speechSynthesis.getVoices() || [];
+      // Clear and populate voiceSelect with filtered voices for current language
+      populateVoiceSelect();
+    }
+
+    function populateVoiceSelect() {
+      const lang = langSelect.value;
+      // Prefer exact lang match then fallback to any voice that starts with language prefix
+      const exact = voices.filter(v => v.lang === lang);
+      const partial = voices.filter(v => v.lang && v.lang.startsWith(lang.split('-')[0]) && !exact.includes(v));
+      const list = exact.concat(partial);
+      voiceSelect.innerHTML = '';
+      if (list.length === 0) {
+        const opt = document.createElement('option');
+        opt.textContent = 'Default voice';
+        opt.value = '';
+        voiceSelect.appendChild(opt);
+      } else {
+        list.forEach(v => {
+          const opt = document.createElement('option');
+          opt.textContent = `${v.name} — ${v.lang}${v.default ? ' (default)' : ''}`;
+          opt.value = v.voiceURI;
+          opt.dataset.lang = v.lang;
+          voiceSelect.appendChild(opt);
+        });
+      }
+      previewInfo.textContent = `Voices: ${list.length || '0'}`;
+    }
+
+    // Wait for voices to be loaded (some browsers load asynchronously)
+    speechSynthesis.onvoiceschanged = () => {
+      loadVoices();
+      renderButtons();
+    };
+    // populate initially in case voices are already available
+    loadVoices();
+
+    // ====== Storage ======
+    function saveToStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(customButtons));
+    }
+    function loadFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) customButtons = JSON.parse(raw);
+      } catch (e) {
+        customButtons = [];
+      }
+    }
+
+    // ====== Utilities ======
+    function uid() { return Math.random().toString(36).slice(2,9); }
+
+    function speakText(text, lang, voiceURI) {
+      if (!('speechSynthesis' in window)) {
+        alert('Sorry — your browser does not support speech synthesis.');
+        return;
+      }
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = lang || '';
+      if (voiceURI) {
+        const v = (speechSynthesis.getVoices() || []).find(x => x.voiceURI === voiceURI);
+        if (v) utter.voice = v;
+      }
+      // adjust rate if Hebrew needs a bit slower
+      utter.rate = (lang && lang.startsWith('he')) ? 0.95 : 1.0;
+      speechSynthesis.cancel(); // stop any existing speech
+      speechSynthesis.speak(utter);
+    }
+
+    // ====== UI render ======
+    function renderButtons() {
+      buttonsGrid.innerHTML = '';
+      customButtons.forEach(btn => {
+        const card = document.createElement('div');
+        card.className = 'btn-card' + (btn.lang && btn.lang.startsWith('he') ? ' hebrew' : '');
+        // label
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = btn.text || '(empty)';
+        // actions
+        const actions = document.createElement('div');
+        actions.className = 'btn-actions';
+        const play = document.createElement('button');
+        play.className = 'small';
+        play.textContent = '🔊';
+        play.title = 'Play';
+        play.onclick = () => speakText(btn.text, btn.lang, btn.voiceURI);
+
+        const edit = document.createElement('button');
+        edit.className = 'small ghost';
+        edit.textContent = 'Edit';
+        edit.onclick = () => openEditDialog(btn.id);
+
+        const del = document.createElement('button');
+        del.className = 'small ghost';
+        del.textContent = 'Delete';
+        del.onclick = () => {
+          if (confirm('Delete this button?')) {
+            customButtons = customButtons.filter(b => b.id !== btn.id);
+            saveToStorage();
+            renderButtons();
+          }
+        };
+
+        actions.appendChild(play);
+        actions.appendChild(edit);
+        actions.appendChild(del);
+
+        // add keyboard-friendly main button (speaks when clicked)
+        const mainBtn = document.createElement('button');
+        mainBtn.className = 'ghost small';
+        mainBtn.style.flex = '0 0 auto';
+        mainBtn.textContent = btn.lang && btn.lang.startsWith('he') ? 'אמור' : 'Say';
+        mainBtn.onclick = () => speakText(btn.text, btn.lang, btn.voiceURI);
+
+        card.appendChild(label);
+        card.appendChild(mainBtn);
+        card.appendChild(actions);
+        buttonsGrid.appendChild(card);
+      });
+      countDisplay.textContent = `${customButtons.length} button${customButtons.length===1?'':'s'}`;
+    }
+
+    // ====== Add / Edit ======
+    function addButtonFromForm() {
+      const text = textInput.value.trim();
+      if (!text) { alert('Please enter text.'); textInput.focus(); return; }
+      const lang = langSelect.value;
+      const voiceURI = voiceSelect.value || '';
+      const obj = { id: uid(), text, lang, voiceURI };
+      customButtons.push(obj);
+      saveToStorage();
+      renderButtons();
+      textInput.value = '';
+      // keep lang & voice for convenience
+    }
+
+    function openEditDialog(id) {
+      const item = customButtons.find(b => b.id === id);
+      if (!item) return;
+      // reuse create form for editing (simple approach)
+      const newText = prompt('Edit text', item.text);
+      if (newText === null) return; // cancel
+      const newLang = prompt('Edit language code (e.g., en-US or he-IL)', item.lang) || item.lang;
+      // pick a voice: try to keep current if available
+      let newVoiceURI = item.voiceURI;
+      // update
+      item.text = newText.trim();
+      item.lang = newLang;
+      item.voiceURI = newVoiceURI;
+      saveToStorage();
+      renderButtons();
+    }
+
+    // ====== Events ======
+    addBtn.addEventListener('click', () => {
+      addButtonFromForm();
+    });
+
+    playPreview.addEventListener('click', () => {
+      const text = textInput.value.trim();
+      if (!text) { previewInfo.textContent = 'Enter text to preview.'; return; }
+      const lang = langSelect.value;
+      const voiceURI = voiceSelect.value || '';
+      speakText(text, lang, voiceURI);
+      previewInfo.textContent = `Preview: ${lang}`;
+    });
+
+    langSelect.addEventListener('change', () => {
+      populateVoiceSelect();
+      // adjust placeholder direction
+      const isHeb = langSelect.value && langSelect.value.startsWith('he');
+      textInput.dir = isHeb ? 'rtl' : 'ltr';
+      textInput.placeholder = isHeb ? 'כתוב משהו בעברית' : 'Type something in English';
+    });
+
+    // Save voices' preferred selection when changed
+    voiceSelect.addEventListener('change', () => {
+      previewInfo.textContent = `Selected voice: ${voiceSelect.selectedOptions[0]?.text || 'Default'}`;
+    });
+
+    // Keyboard: Enter in textInput adds a button
+    textInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); addButtonFromForm(); }
+    });
+
+    // ====== Init ======
+    function init() {
+      loadFromStorage();
+      // ensure voices loaded
+      if ((speechSynthesis.getVoices() || []).length > 0) loadVoices();
+      renderButtons();
+    }
+
+    init();
+  </script>
+</body>
+</html>
