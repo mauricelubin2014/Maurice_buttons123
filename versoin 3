@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Colorful Speak Buttons — More Realistic</title>
+  <style>
+    :root{
+      --muted:#94a3b8;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color-scheme: dark;
+    }
+    html,body{height:100%;margin:0}
+    body{
+      background: linear-gradient(180deg,#041025 0%, #081025 55%, #021018 100%);
+      color:#e6eef8;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      max-width:1100px;
+      margin:28px auto;padding:22px;
+    }
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    h1{margin:0;font-size:1.5rem}
+    .sub{color:var(--muted);font-size:0.9rem;margin-top:6px}
+
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.04);
+      border-radius:12px;padding:14px;margin-top:16px;box-shadow:0 6px 30px rgba(2,6,23,0.45);
+    }
+
+    label{display:block;font-size:0.85rem;color:#cfe7ff;margin-bottom:6px}
+    input[type="text"], input[type="color"], select, textarea, input[type="checkbox"] {
+      width:100%; padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      color: #e6eef8; outline:none;
+    }
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .row > *{flex:1 1 220px}
+
+    .form-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    button{cursor:pointer;border-radius:10px;padding:9px 12px;border:0;font-weight:600}
+    .btn-primary{background: linear-gradient(90deg,#7c3aed,#3b82f6);color:white;box-shadow:0 6px 18px rgba(124,58,237,0.12)}
+    .btn-ghost{background:transparent;color:#cfe7ff;border:1px solid rgba(255,255,255,0.04)}
+    .btn-small{padding:6px 8px;font-size:0.9rem;border-radius:8px}
+    .muted{color:var(--muted);font-size:0.9rem}
+
+    /* Buttons grid */
+    .buttons-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px}
+    .btn-card{
+      display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;border:1px solid rgba(0,0,0,0.15);
+      position:relative;overflow:hidden;min-height:86px;transition:transform .12s ease, box-shadow .12s ease;
+    }
+    .btn-card:active{transform:translateY(1px)}
+    .btn-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .label{font-weight:700;font-size:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .alt{font-size:0.9rem;opacity:0.95}
+    .btn-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.12);font-weight:700}
+    .lang-badge{padding:6px 8px;border-radius:999px;font-weight:700;color:#021018;background:rgba(255,255,255,0.85)}
+
+    footer{margin-top:18px;color:var(--muted)}
+
+    /* responsive */
+    @media (max-width:640px){
+      .row{flex-direction:column}
+      .form-actions{flex-direction:column}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Colorful Speak Buttons — More Realistic</h1>
+      <div class="sub">Full-card color, improved natural speech (split phrases, small pauses, varied pitch). Toggle realistic mode below.</div>
+    </div>
+    <div class="muted">Saved locally · Works in modern browsers</div>
+  </header>
+
+  <div class="panel" id="createPanel">
+    <label for="textInput">Primary text</label>
+    <input id="textInput" type="text" placeholder="Type primary text (e.g., Hello / שלום)" />
+
+    <div class="row" style="margin-top:10px">
+      <div>
+        <label for="langSelect">Primary language</label>
+        <select id="langSelect">
+          <option value="en-US">English (en-US)</option>
+          <option value="he-IL">Hebrew (he-IL)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="voiceSelect">Primary voice</label>
+        <select id="voiceSelect"><option>Loading voices…</option></select>
+      </div>
+
+      <div>
+        <label for="colorSelect">Button color (primary)</label>
+        <input id="colorSelect" type="color" value="#7c3aed" title="Pick a color for the button" />
+      </div>
+    </div>
+
+    <hr style="margin:12px 0;border:none;border-top:1px dashed rgba(255,255,255,0.04)" />
+
+    <label for="altTextInput">Alternate text (optional)</label>
+    <input id="altTextInput" type="text" placeholder="Alternate text / translation (optional)" />
+
+    <div class="row" style="margin-top:10px">
+      <div>
+        <label for="altLangSelect">Alternate language</label>
+        <select id="altLangSelect">
+          <option value="">(none)</option>
+          <option value="en-US">English (en-US)</option>
+          <option value="he-IL">Hebrew (he-IL)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="altVoiceSelect">Alternate voice</label>
+        <select id="altVoiceSelect"><option>Loading voices…</option></select>
+      </div>
+
+      <div>
+        <label for="altColorSelect">Button color (alternate)</label>
+        <input id="altColorSelect" type="color" value="#0ea5a4" title="Pick a secondary color (optional)" />
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px;align-items:center">
+      <div style="flex:1">
+        <label style="margin:0 0 6px 0">Realistic speech</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="realisticToggle" type="checkbox" /> <div class="muted">Split phrases, slight pauses & pitch variation</div>
+        </div>
+      </div>
+      <div style="width:220px">
+        <label style="margin-bottom:6px">Realistic intensity</label>
+        <select id="realisticIntensity">
+          <option value="0.6">Low</option>
+          <option value="1.0" selected>Normal</option>
+          <option value="1.4">High</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button id="addBtn" class="btn-primary">+ Add Button</button>
+      <button id="playPreview" class="btn-ghost btn-small">Play Preview (primary)</button>
+      <button id="playPreviewBoth" class="btn-ghost btn-small">Play Preview (both)</button>
+      <button id="listVoices" class="btn-ghost btn-small">List Voices</button>
+      <div id="previewInfo" class="muted" aria-live="polite" style="align-self:center"></div>
+    </div>
+
+    <div id="voicesDump" style="margin-top:12px;display:none">
+      <label style="margin-bottom:6px">Available voices (debug)</label>
+      <pre id="voicesList" class="voices" style="max-height:200px;overflow:auto;background:rgba(255,255,255,0.02);padding:10px;border-radius:8px"></pre>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <strong>Your Buttons</strong><div class="muted" id="countDisplay">0</div>
+    </div>
+    <div id="buttonsGrid" class="buttons-grid" aria-live="polite" style="margin-top:12px"></div>
+    <div class="muted" style="margin-top:10px">Longer texts are split into phrases for more natural delivery. For professional quality consider cloud TTS (Azure/Google/AWS).</div>
+  </div>
+
+  <footer>Want me to add cloud TTS (high-quality Hebrew/English voices)? Tell me which provider and I’ll provide a small server example.</footer>
+
+  <script>
+    // ====== Data & storage ======
+    const STORAGE_KEY = 'customSpeakButtons_v1_realistic_color';
+    let customButtons = []; // {id, text, lang, voiceURI, color, altText, altLang, altVoiceURI, altColor}
+
+    // Simulated Hebrew variants (unchanged)
+    const simulatedHebrewVariants = [
+      { key: 'deep', label: 'Simulated — deep', pitch: 0.9, rate: 0.92 },
+      { key: 'bright', label: 'Simulated — bright', pitch: 1.15, rate: 1.04 },
+      { key: 'slow', label: 'Simulated — slow & clear', pitch: 1.0, rate: 0.8 },
+      { key: 'fast', label: 'Simulated — quick', pitch: 1.05, rate: 1.2 }
+    ];
+
+    // ====== DOM ======
+    const textInput = document.getElementById('textInput');
+    const langSelect = document.getElementById('langSelect');
+    const voiceSelect = document.getElementById('voiceSelect');
+    const colorSelect = document.getElementById('colorSelect');
+
+    const altTextInput = document.getElementById('altTextInput');
+    const altLangSelect = document.getElementById('altLangSelect');
+    const altVoiceSelect = document.getElementById('altVoiceSelect');
+    const altColorSelect = document.getElementById('altColorSelect');
+
+    const addBtn = document.getElementById('addBtn');
+    const playPreview = document.getElementById('playPreview');
+    const playPreviewBoth = document.getElementById('playPreviewBoth');
+    const listVoicesBtn = document.getElementById('listVoices');
+    const previewInfo = document.getElementById('previewInfo');
+    const buttonsGrid = document.getElementById('buttonsGrid');
+    const countDisplay = document.getElementById('countDisplay');
+    const voicesDump = document.getElementById('voicesDump');
+    const voicesList = document.getElementById('voicesList');
+
+    const realisticToggle = document.getElementById('realisticToggle');
+    const realisticIntensity = document.getElementById('realisticIntensity');
+
+    // ====== Voices ======
+    let voices = [];
+
+    function loadVoices() {
+      voices = speechSynthesis.getVoices() || [];
+      populateVoiceSelects();
+    }
+
+    function populateVoiceSelects() {
+      populateVoiceSelectFor(voiceSelect, langSelect.value);
+      populateVoiceSelectFor(altVoiceSelect, altLangSelect.value);
+    }
+
+    // Modified: show all voices but prioritize matches; preserve previous selection if possible
+    function populateVoiceSelectFor(selectEl, lang) {
+      const prev = selectEl.value || null;
+      const all = speechSynthesis.getVoices() || [];
+      // ordering: exact -> prefix -> name matches -> others
+      const exact = lang ? all.filter(v => v.lang === lang) : [];
+      const prefix = lang ? all.filter(v => v.lang && v.lang.split('-')[0] === (lang.split('-')[0]) && v.lang !== lang) : [];
+      const hebByName = lang ? all.filter(v => /hebrew|עברית/i.test(v.name) && !exact.includes(v) && !prefix.includes(v)) : [];
+      const others = all.filter(v => !exact.includes(v) && !prefix.includes(v) && !hebByName.includes(v));
+      const ordered = exact.concat(prefix).concat(hebByName).concat(others);
+
+      selectEl.innerHTML = '';
+      if (!ordered.length) {
+        const opt = document.createElement('option');
+        opt.textContent = lang ? 'Default voice (none available)' : '(none)';
+        opt.value = '';
+        selectEl.appendChild(opt);
+      } else {
+        ordered.forEach(v => {
+          const opt = document.createElement('option');
+          opt.textContent = `${v.name} — ${v.lang}${v.default ? ' (default)' : ''}`;
+          opt.value = v.voiceURI;
+          opt.dataset.lang = v.lang;
+          selectEl.appendChild(opt);
+        });
+      }
+
+      // add simulated options for Hebrew
+      if (lang && lang.split('-')[0] === 'he') {
+        const sep = document.createElement('option');
+        sep.textContent = '──────── Simulated Hebrew variants ────────';
+        sep.disabled = true;
+        selectEl.appendChild(sep);
+        simulatedHebrewVariants.forEach(s => {
+          const opt = document.createElement('option');
+          opt.textContent = s.label + ' (simulated)';
+          opt.value = 'SIM:' + s.key;
+          opt.dataset.sim = JSON.stringify({ pitch: s.pitch, rate: s.rate });
+          selectEl.appendChild(opt);
+        });
+      }
+
+      // try to restore previous selection if it still exists
+      if (prev) {
+        const hasPrev = Array.from(selectEl.options).some(o => o.value === prev);
+        if (hasPrev) selectEl.value = prev;
+      }
+    }
+
+    speechSynthesis.onvoiceschanged = () => {
+      loadVoices();
+      renderButtons();
+    };
+    loadVoices();
+
+    // ====== Storage ======
+    function saveToStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(customButtons));
+    }
+    function loadFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) customButtons = JSON.parse(raw);
+      } catch (e) {
+        customButtons = [];
+      }
+    }
+
+    // ====== Utilities ======
+    function uid() { return Math.random().toString(36).slice(2,9); }
+
+    // contrast helper: return black or white depending on luminance of hex color
+    function contrastTextColor(hex) {
+      if (!hex) return '#000';
+      const h = hex.replace('#','');
+      const r = parseInt(h.substr(0,2),16);
+      const g = parseInt(h.substr(2,2),16);
+      const b = parseInt(h.substr(4,2),16);
+      // relative luminance
+      const l = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+      return l > 0.55 ? '#000000' : '#ffffff';
+    }
+
+    // split into natural-sounding phrase chunks: sentences, commas and short phrases
+    function splitIntoPhrases(text) {
+      // prefer sentence end punctuation
+      const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+      const phrases = [];
+      sentences.forEach(s => {
+        // further split on commas / semicolons for more natural breaks
+        const parts = s.split(/[,;:]+/).map(p => p.trim()).filter(Boolean);
+        parts.forEach(p => phrases.push(p));
+      });
+      return phrases;
+    }
+
+    // speak a single utterance (returns promise)
+    function speakSegment(segment, lang, voiceURI, pitch = 1, rate = 1, cancelExisting = true) {
+      return new Promise(resolve => {
+        if (!('speechSynthesis' in window)) return resolve();
+        const u = new SpeechSynthesisUtterance(segment);
+        if (lang && lang.split('-')[0] === 'he') u.lang = 'he-IL';
+        else u.lang = lang || '';
+        u.pitch = pitch;
+        u.rate = rate;
+
+        // pick voice if provided
+        const vs = speechSynthesis.getVoices() || [];
+        let chosen = null;
+        if (voiceURI && !voiceURI.startsWith('SIM:')) chosen = vs.find(v => v.voiceURI === voiceURI);
+        if (!chosen && u.lang) {
+          const prefix = u.lang.split('-')[0];
+          chosen = vs.find(v => v.lang && v.lang.split('-')[0] === prefix);
+        }
+        if (!chosen) chosen = vs.find(v => /hebrew|עברית/i.test(v.name)) || vs[0] || null;
+        if (chosen) u.voice = chosen;
+
+        u.onend = () => resolve();
+        if (cancelExisting) speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      });
+    }
+
+    // Main speakText: if realistic enabled, split into phrases and speak sequentially with varied pitch/rate
+    async function speakText(text, lang, voiceURI, opts = {}) {
+      if (!('speechSynthesis' in window)) return;
+      text = (text || '').trim().replace(/\s+/g, ' ');
+      if (!text) return;
+
+      const realistic = realisticToggle.checked;
+      const intensity = parseFloat(realisticIntensity.value) || 1.0;
+
+      // If voiceURI is simulated, map to pitch/rate baseline
+      let simSettings = null;
+      if (voiceURI && voiceURI.startsWith('SIM:')) {
+        const key = voiceURI.slice(4);
+        simSettings = simulatedHebrewVariants.find(s => s.key === key) || null;
+      }
+
+      if (!realistic) {
+        // simple single utterance
+        const uPitch = simSettings ? simSettings.pitch : 1.0;
+        const uRate = simSettings ? simSettings.rate : 1.0;
+        await speakSegment(text, lang, voiceURI, uPitch, uRate, true);
+        return;
+      }
+
+      // realistic: split into phrases and speak sequentially
+      const phrases = splitIntoPhrases(text);
+      for (let i=0;i<phrases.length;i++) {
+        const seg = phrases[i];
+        // vary pitch & rate slightly per segment to sound more natural
+        const basePitch = simSettings ? simSettings.pitch : 1.0;
+        const baseRate = simSettings ? simSettings.rate : 1.0;
+        // random small variation scaled by intensity
+        const jitter = (Math.random() * 0.12 - 0.06) * intensity;
+        const pitch = Math.max(0.5, Math.min(2.0, basePitch + jitter));
+        const rate = Math.max(0.4, Math.min(2.0, baseRate + jitter * 0.6));
+        await speakSegment(seg, lang, voiceURI, pitch, rate, i===0); // cancel only at first segment
+        // brief pause between phrases (shorter if many short phrases)
+        const pause = Math.min(600, 180 + seg.length * 8 * (1/intensity));
+        await new Promise(r => setTimeout(r, pause));
+      }
+    }
+
+    // helpers for both sequential and simultaneous play (sequential uses speakText promises)
+    async function speakBothSequential(primary, primaryLang, primaryVoice, alt, altLang, altVoice) {
+      if (primary) await speakText(primary, primaryLang, primaryVoice);
+      if (alt) {
+        await new Promise(r => setTimeout(r, 200)); // short gap
+        await speakText(alt, altLang, altVoice);
+      }
+    }
+
+    function speakBothSimultaneous(primary, primaryLang, primaryVoice, alt, altLang, altVoice) {
+      if (primary) speakText(primary, primaryLang, primaryVoice);
+      if (alt) speakText(alt, altLang, altVoice);
+    }
+
+    // ====== UI Rendering & Color handling ======
+    function renderButtons() {
+      buttonsGrid.innerHTML = '';
+      customButtons.forEach(btn => {
+        const card = document.createElement('div');
+        card.className = 'btn-card';
+        const bg = btn.color || '#7c3aed';
+        card.style.background = bg;
+        // apply subtle overlay for depth
+        card.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.02), 0 8px 24px rgba(2,6,23,0.35)';
+
+        const textColor = contrastTextColor(bg);
+        const secondaryBg = btn.altColor || btn.color || '#0ea5a4';
+        const secondaryText = contrastTextColor(secondaryBg);
+
+        const top = document.createElement('div');
+        top.className = 'btn-top';
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = btn.text || '(empty)';
+        label.style.color = textColor;
+        if (btn.lang && btn.lang.split('-')[0] === 'he') label.dir = 'rtl';
+
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.style.background = textColor === '#ffffff' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)';
+        const langBadge = document.createElement('div');
+        langBadge.className = 'lang-badge';
+        langBadge.textContent = (btn.lang || '—').split('-')[0].toUpperCase();
+        langBadge.style.background = textColor === '#ffffff' ? '#ffffff' : '#021018';
+        langBadge.style.color = textColor === '#ffffff' ? '#021018' : '#ffffff';
+        chip.appendChild(langBadge);
+
+        top.appendChild(label);
+        top.appendChild(chip);
+        card.appendChild(top);
+
+        if (btn.altText) {
+          const altDiv = document.createElement('div');
+          altDiv.className = 'alt';
+          altDiv.textContent = '⇄ ' + btn.altText;
+          altDiv.style.color = secondaryText;
+          if (btn.altLang && btn.altLang.split('-')[0] === 'he') altDiv.dir = 'rtl';
+          card.appendChild(altDiv);
+        }
+
+        const actions = document.createElement('div');
+        actions.className = 'btn-actions';
+
+        const play = document.createElement('button');
+        play.className = 'btn-primary btn-small';
+        play.textContent = '🔊 Play';
+        play.style.background = textColor === '#ffffff' ? 'rgba(0,0,0,0.28)' : 'rgba(255,255,255,0.08)';
+        play.style.color = textColor === '#ffffff' ? '#ffffff' : '#021018';
+        play.onclick = () => speakText(btn.text, btn.lang, btn.voiceURI);
+
+        const playAlt = document.createElement('button');
+        playAlt.className = 'btn-ghost btn-small';
+        playAlt.textContent = '🔁 Alt';
+        playAlt.onclick = () => speakText(btn.altText || '', btn.altLang || '', btn.altVoiceURI || '');
+
+        const bothSeq = document.createElement('button');
+        bothSeq.className = 'btn-ghost btn-small';
+        bothSeq.textContent = '▶ Both';
+        bothSeq.onclick = () => speakBothSequential(btn.text, btn.lang, btn.voiceURI, btn.altText, btn.altLang, btn.altVoiceURI);
+
+        const bothSim = document.createElement('button');
+        bothSim.className = 'btn-ghost btn-small';
+        bothSim.textContent = '🔊🔊 Sim';
+        bothSim.onclick = () => speakBothSimultaneous(btn.text, btn.lang, btn.voiceURI, btn.altText, btn.altLang, btn.altVoiceURI);
+
+        const edit = document.createElement('button');
+        edit.className = 'btn-ghost btn-small';
+        edit.textContent = 'Edit';
+        edit.onclick = () => openEditDialog(btn.id);
+
+        const del = document.createElement('button');
+        del.className = 'btn-ghost btn-small';
+        del.textContent = 'Delete';
+        del.onclick = () => {
+          if (confirm('Delete this button?')) {
+            customButtons = customButtons.filter(b => b.id !== btn.id);
+            saveToStorage();
+            renderButtons();
+          }
+        };
+
+        // color preview
+        const swatch = document.createElement('div');
+        swatch.style.width = '18px';
+        swatch.style.height = '18px';
+        swatch.style.borderRadius = '6px';
+        swatch.style.background = btn.color || '#7c3aed';
+
+        actions.appendChild(play);
+        actions.appendChild(playAlt);
+        actions.appendChild(bothSeq);
+        actions.appendChild(bothSim);
+        actions.appendChild(edit);
+        actions.appendChild(del);
+        actions.appendChild(swatch);
+
+        card.appendChild(actions);
+        buttonsGrid.appendChild(card);
+      });
+      countDisplay.textContent = `${customButtons.length} button${customButtons.length===1?'':'s'}`;
+    }
+
+    // ====== Add / Edit ======
+    function addButtonFromForm() {
+      const text = textInput.value.trim();
+      if (!text) { alert('Enter primary text.'); textInput.focus(); return; }
+      const lang = langSelect.value;
+      const voiceURI = voiceSelect.value || '';
+      const color = colorSelect.value || '#7c3aed';
+
+      const altText = altTextInput.value.trim();
+      const altLang = altLangSelect.value || '';
+      const altVoiceURI = altVoiceSelect.value || '';
+      const altColor = altColorSelect.value || color;
+
+      const obj = { id: uid(), text, lang, voiceURI, color, altText, altLang, altVoiceURI, altColor };
+      customButtons.push(obj);
+      saveToStorage();
+      renderButtons();
+
+      textInput.value = ''; altTextInput.value = '';
+    }
+
+    function openEditDialog(id) {
+      const item = customButtons.find(b => b.id === id);
+      if (!item) return;
+      const newText = prompt('Edit primary text', item.text);
+      if (newText === null) return;
+      const newAlt = prompt('Edit alternate text (leave empty to remove)', item.altText || '');
+      if (newAlt === null) return;
+      const newColor = prompt('Primary color (hex, e.g., #ff0066)', item.color || '#7c3aed');
+      const newAltColor = prompt('Alternate color (hex)', item.altColor || item.color) || item.altColor || item.color;
+      item.text = newText.trim();
+      item.altText = newAlt.trim();
+      item.color = newColor;
+      item.altColor = newAltColor;
+      saveToStorage();
+      renderButtons();
+    }
+
+    // ====== Events ======
+    addBtn.addEventListener('click', addButtonFromForm);
+
+    playPreview.addEventListener('click', () => {
+      const text = textInput.value.trim();
+      if (!text) { previewInfo.textContent = 'Enter primary text to preview.'; return; }
+      const lang = langSelect.value;
+      const voiceURI = voiceSelect.value || '';
+      speakText(text, lang, voiceURI);
+      previewInfo.textContent = `Preview: ${lang}`;
+    });
+
+    playPreviewBoth.addEventListener('click', () => {
+      const p = textInput.value.trim();
+      const pl = langSelect.value;
+      const pv = voiceSelect.value || '';
+      const a = altTextInput.value.trim();
+      const al = altLangSelect.value;
+      const av = altVoiceSelect.value || '';
+      if (!p && !a) { previewInfo.textContent = 'Enter primary or alternate text to preview.'; return; }
+      speakBothSequential(p, pl, pv, a, al, av);
+      previewInfo.textContent = 'Preview both (sequential)';
+    });
+
+    langSelect.addEventListener('change', () => {
+      populateVoiceSelects();
+      const isHeb = langSelect.value && langSelect.value.split('-')[0] === 'he';
+      textInput.dir = isHeb ? 'rtl' : 'ltr';
+      if (!colorSelect.value) colorSelect.value = isHeb ? '#0ea5a4' : '#7c3aed';
+    });
+
+    altLangSelect.addEventListener('change', () => {
+      populateVoiceSelects();
+      const isHeb = altLangSelect.value && altLangSelect.value.split('-')[0] === 'he';
+      altTextInput.dir = isHeb ? 'rtl' : 'ltr';
+      if (!altColorSelect.value) altColorSelect.value = isHeb ? '#0ea5a4' : '#7c3aed';
+    });
+
+    listVoicesBtn.addEventListener('click', () => {
+      const vs = speechSynthesis.getVoices() || [];
+      if (!vs.length) {
+        voicesList.textContent = 'No voices available yet. Try interacting with the page or reloading the browser.';
+      } else {
+        voicesList.textContent = vs.map(v => `${v.lang} | ${v.name} | ${v.voiceURI}${v.default ? ' (default)' : ''}`).join('\n');
+      }
+      voicesDump.style.display = voicesDump.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // ====== Init ======
+    function init() {
+      loadFromStorage();
+      if ((speechSynthesis.getVoices() || []).length > 0) loadVoices();
+      renderButtons();
+    }
+    init();
+  </script>
+</body>
+</html>
