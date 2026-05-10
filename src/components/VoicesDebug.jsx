@@ -1,49 +1,33 @@
-import { useState } from 'react'
 import PropTypes from 'prop-types'
-import { buildVoiceOptions } from '../utils/voices.js'
+import { Button, Collapse, ScrollArea, Code, Stack, Text } from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
 
 /**
- * Collapsible panel that dumps all system voices for debugging.
+ * Collapsible panel listing all system voices for debugging.
+ * Uses Mantine Collapse + useDisclosure — no hand-rolled toggle state.
  */
 export default function VoicesDebug({ voices }) {
-  const [open, setOpen] = useState(false)
+  const [opened, { toggle }] = useDisclosure(false)
 
   return (
-    <div style={{ marginTop: '12px' }}>
-      <button
-        type="button"
-        className="btn-ghost btn-small"
-        onClick={() => setOpen(o => !o)}
-      >
-        {open ? 'Hide Voices' : 'List Voices'}
-      </button>
+    <Stack gap="xs">
+      <Button variant="subtle" size="compact-sm" onClick={toggle}>
+        {opened ? 'Hide Voices' : 'List Voices'}
+      </Button>
 
-      {open && (
-        <div style={{ marginTop: '10px' }}>
-          <label style={{ marginBottom: '6px', display: 'block' }}>
-            Available voices (debug)
-          </label>
-          <pre
-            style={{
-              maxHeight: '200px',
-              overflow: 'auto',
-              background: 'rgba(255,255,255,0.02)',
-              padding: '10px',
-              borderRadius: '8px',
-              fontSize: '0.82rem',
-              color: '#94a3b8',
-            }}
-            aria-live="polite"
-          >
+      <Collapse in={opened}>
+        <Text size="xs" c="dimmed" mb={4}>Available voices (debug)</Text>
+        <ScrollArea h={180}>
+          <Code block style={{ fontSize: '0.78rem', whiteSpace: 'pre' }}>
             {voices.length === 0
-              ? 'No voices available yet. Try interacting with the page or reloading the browser.'
+              ? 'No voices available yet.\nTry interacting with the page or reloading.'
               : voices
                   .map(v => `${v.lang} | ${v.name} | ${v.voiceURI}${v.default ? ' (default)' : ''}`)
                   .join('\n')}
-          </pre>
-        </div>
-      )}
-    </div>
+          </Code>
+        </ScrollArea>
+      </Collapse>
+    </Stack>
   )
 }
 

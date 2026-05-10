@@ -1,157 +1,155 @@
-import { useState } from 'react'
-import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
+import { useForm, Controller, useWatch } from 'react-hook-form'
 import PropTypes from 'prop-types'
+import {
+  Modal, TextInput, Select, Button, Group, Stack, Divider, Text,
+} from '@mantine/core'
+import { HexColorInput, HexColorPicker } from 'react-colorful'
 import { buildVoiceOptions } from '../utils/voices.js'
 
 const LANG_OPTIONS = [
   { value: 'en-US', label: 'English (en-US)' },
   { value: 'he-IL', label: 'Hebrew (he-IL)' },
 ]
-
-const ALT_LANG_OPTIONS = [
-  { value: '',      label: '(none)' },
-  { value: 'en-US', label: 'English (en-US)' },
-  { value: 'he-IL', label: 'Hebrew (he-IL)' },
-]
+const ALT_LANG_OPTIONS = [{ value: '', label: '(none)' }, ...LANG_OPTIONS]
 
 /**
- * Accessible modal dialog for editing a speak button.
- * Uses @headlessui/react Dialog — focus-trap, Escape-close, and ARIA handled automatically.
- * Key prop on the parent ensures form state resets when a different button is opened.
+ * Accessible edit modal — Mantine Modal (focus-trap + Escape built-in)
+ * + react-hook-form.  key={button.id} on the parent remounts on each new
+ * button so no sync-setState-in-effect is needed.
  */
 export default function EditModal({ button, voices, onSave, onClose }) {
-  // Initial state comes from the button prop; key={button.id} on the parent remounts
-  // this component when a different button is opened, so no sync useEffect needed.
-  const [form, setForm] = useState(button)
+  const { register, handleSubmit, setValue, control } = useForm({
+    defaultValues: button,
+  })
+
+  const lang     = useWatch({ control, name: 'lang' })
+  const altLang  = useWatch({ control, name: 'altLang' }) || ''
+  const color    = useWatch({ control, name: 'color' })   || '#7c3aed'
+  const altColor = useWatch({ control, name: 'altColor' }) || color
 
   if (!button) return null
 
-  const set = (key, value) => setForm(f => ({ ...f, [key]: value }))
+  const primaryVoiceOpts = buildVoiceOptions(voices, lang)
+    .filter(o => !o.disabled)
+    .map(o => ({ value: o.value, label: o.label }))
 
-  const primaryVoiceOpts = buildVoiceOptions(voices, form.lang)
-  const altVoiceOpts     = buildVoiceOptions(voices, form.altLang)
-  const isHebPrimary     = form.lang === 'he-IL'
-  const isHebAlt         = form.altLang === 'he-IL'
+  const altVoiceOpts = buildVoiceOptions(voices, altLang)
+    .filter(o => !o.disabled)
+    .map(o => ({ value: o.value, label: o.label }))
 
-  function handleSave(e) {
-    e.preventDefault()
-    onSave({ ...form, text: form.text.trim(), altText: (form.altText || '').trim() })
+  function onSubmit(data) {
+    onSave({ ...data, text: data.text.trim(), altText: (data.altText || '').trim() })
   }
 
   return (
-    <Dialog
-      open={true}
+    <Modal
+      opened={true}
       onClose={onClose}
-      style={{ position: 'relative', zIndex: 1000 }}
+      title="Edit Button"
+      size="lg"
+      overlayProps={{ backgroundOpacity: 0.6 }}
     >
-      {/* Backdrop */}
-      <div
-        style={{
-          position: 'fixed', inset: 0,
-          background: 'rgba(2,6,23,0.75)',
-        }}
-        aria-hidden="true"
-      />
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Stack gap="sm">
+          <TextInput
+            label="Primary text"
+            dir={lang === 'he-IL' ? 'rtl' : 'ltr'}
+            {...register('text', { required: true })}
+          />
 
-      {/* Centring wrapper */}
-      <div
-        style={{
-          position: 'fixed', inset: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '1rem',
-        }}
-      >
-        <DialogPanel
-          className="panel"
-          style={{ width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}
-        >
-          <DialogTitle style={{ marginTop: 0, fontSize: '1.1rem', fontWeight: 700 }}>
-            Edit Button
-          </DialogTitle>
-
-          <form onSubmit={handleSave}>
-            {/* Primary */}
-            <label htmlFor="editText">Primary text</label>
-            <input
-              id="editText"
-              type="text"
-              dir={isHebPrimary ? 'rtl' : 'ltr'}
-              value={form.text}
-              onChange={e => set('text', e.target.value)}
-              required
+          <Group grow align="flex-start">
+            <Select
+              label="Primary language"
+              data={LANG_OPTIONS}
+              value={lang}
+              onChange={v => setValue('lang', v)}
             />
-
-            <div className="row" style={{ marginTop: '10px' }}>
-              <div>
-                <label htmlFor="editLang">Primary language</label>
-                <select id="editLang" value={form.lang} onChange={e => set('lang', e.target.value)}>
-                  {LANG_OPTIONS.map(o => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="editVoice">Primary voice</label>
-                <select id="editVoice" value={form.voiceURI} onChange={e => set('voiceURI', e.target.value)}>
-                  {primaryVoiceOpts.map(o => (
-                    <option key={o.value} value={o.value} disabled={o.disabled}>{o.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="editColor">Button color</label>
-                <input id="editColor" type="color" value={form.color} onChange={e => set('color', e.target.value)} />
-              </div>
-            </div>
-
-            <hr style={{ margin: '12px 0', border: 'none', borderTop: '1px dashed rgba(255,255,255,0.04)' }} />
-
-            {/* Alternate */}
-            <label htmlFor="editAltText">Alternate text (optional)</label>
-            <input
-              id="editAltText"
-              type="text"
-              dir={isHebAlt ? 'rtl' : 'ltr'}
-              value={form.altText || ''}
-              onChange={e => set('altText', e.target.value)}
-            />
-
-            <div className="row" style={{ marginTop: '10px' }}>
-              <div>
-                <label htmlFor="editAltLang">Alternate language</label>
-                <select id="editAltLang" value={form.altLang || ''} onChange={e => set('altLang', e.target.value)}>
-                  {ALT_LANG_OPTIONS.map(o => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="editAltVoice">Alternate voice</label>
-                <select id="editAltVoice" value={form.altVoiceURI || ''} onChange={e => set('altVoiceURI', e.target.value)}>
-                  {altVoiceOpts.map(o => (
-                    <option key={o.value} value={o.value} disabled={o.disabled}>{o.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="editAltColor">Alternate color</label>
-                <input
-                  id="editAltColor"
-                  type="color"
-                  value={form.altColor || form.color || '#0ea5a4'}
-                  onChange={e => set('altColor', e.target.value)}
+            <Controller
+              name="voiceURI"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  label="Primary voice"
+                  data={primaryVoiceOpts}
+                  value={field.value}
+                  onChange={field.onChange}
+                  searchable
                 />
-              </div>
-            </div>
+              )}
+            />
+            <Stack gap={4}>
+              <Text size="sm">Button color</Text>
+              <HexColorPicker
+                color={color}
+                onChange={v => setValue('color', v)}
+                style={{ width: '100%', height: 80 }}
+              />
+              <HexColorInput
+                color={color}
+                onChange={v => setValue('color', v)}
+                prefixed
+                style={{ width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'inherit' }}
+              />
+            </Stack>
+          </Group>
 
-            <div className="form-actions" style={{ marginTop: '14px' }}>
-              <button type="submit" className="btn-primary">Save</button>
-              <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
-            </div>
-          </form>
-        </DialogPanel>
-      </div>
-    </Dialog>
+          <Divider opacity={0.15} />
+
+          <TextInput
+            label="Alternate text (optional)"
+            dir={altLang === 'he-IL' ? 'rtl' : 'ltr'}
+            {...register('altText')}
+          />
+
+          <Group grow align="flex-start">
+            <Select
+              label="Alternate language"
+              data={ALT_LANG_OPTIONS}
+              value={altLang}
+              onChange={v => setValue('altLang', v)}
+            />
+            <Controller
+              name="altVoiceURI"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  label="Alternate voice"
+                  data={altVoiceOpts}
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                  searchable
+                />
+              )}
+            />
+            <Stack gap={4}>
+              <Text size="sm">Alternate color</Text>
+              <HexColorPicker
+                color={altColor}
+                onChange={v => setValue('altColor', v)}
+                style={{ width: '100%', height: 80 }}
+              />
+              <HexColorInput
+                color={altColor}
+                onChange={v => setValue('altColor', v)}
+                prefixed
+                style={{ width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'inherit' }}
+              />
+            </Stack>
+          </Group>
+
+          <Group justify="flex-end" mt="xs">
+            <Button variant="subtle" onClick={onClose}>Cancel</Button>
+            <Button
+              type="submit"
+              variant="gradient"
+              gradient={{ from: 'violet', to: 'blue' }}
+            >
+              Save
+            </Button>
+          </Group>
+        </Stack>
+      </form>
+    </Modal>
   )
 }
 

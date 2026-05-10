@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { Card, Badge, Button, Group, Text, Tooltip } from '@mantine/core'
 import { contrastTextColor } from '../utils/color.js'
 import {
   speakText,
@@ -7,13 +8,10 @@ import {
 } from '../utils/speech.js'
 
 /**
- * A single saved speak-button card with full-card background colour.
+ * A single saved speak-button card — Mantine Card with full-card background colour.
  */
 export default function ButtonCard({ button, realisticMode, realisticIntensity, onEdit, onDelete }) {
-  const {
-    text, lang, voiceURI, color,
-    altText, altLang, altVoiceURI,
-  } = button
+  const { text, lang, voiceURI, color, altText, altLang, altVoiceURI } = button
 
   const bg         = color || '#7c3aed'
   const textColor  = contrastTextColor(bg)
@@ -22,127 +20,133 @@ export default function ButtonCard({ button, realisticMode, realisticIntensity, 
   const isHebPrim  = lang && lang.split('-')[0] === 'he'
   const isHebAlt   = altLang && altLang.split('-')[0] === 'he'
 
-  const chipBg = textColor === '#ffffff' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'
-  const badgeBg   = textColor === '#ffffff' ? '#ffffff' : '#021018'
-  const badgeText = textColor === '#ffffff' ? '#021018' : '#ffffff'
-  const playBg    = textColor === '#ffffff' ? 'rgba(0,0,0,0.28)' : 'rgba(255,255,255,0.08)'
-
   return (
-    <div
-      className="btn-card"
+    <Card
+      padding="sm"
+      radius="md"
       style={{
         background: bg,
-        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.02), 0 8px 24px rgba(2,6,23,0.35)',
+        border: '1px solid rgba(0,0,0,0.15)',
+        boxShadow: '0 8px 24px rgba(2,6,23,0.35)',
       }}
     >
-      {/* Top row: label + language badge */}
-      <div className="btn-top">
-        <div
-          className="label"
-          style={{ color: textColor }}
+      {/* Header row */}
+      <Group justify="space-between" mb={altText ? 4 : 8} wrap="nowrap">
+        <Text
+          fw={700}
+          size="md"
+          style={{ color: textColor, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}
           dir={isHebPrim ? 'rtl' : 'ltr'}
         >
           {text || '(empty)'}
-        </div>
-        <div className="chip" style={{ background: chipBg }}>
-          <div
-            className="lang-badge"
-            style={{ background: badgeBg, color: badgeText }}
-          >
-            {langCode}
-          </div>
-        </div>
-      </div>
+        </Text>
+        <Badge
+          size="sm"
+          radius="xl"
+          style={{
+            background: textColor === '#ffffff' ? '#ffffff' : '#021018',
+            color:      textColor === '#ffffff' ? '#021018' : '#ffffff',
+            flexShrink: 0,
+          }}
+        >
+          {langCode}
+        </Badge>
+      </Group>
 
       {/* Alternate text */}
       {altText && (
-        <div
-          className="alt"
-          style={{ color: textColor }}
+        <Text
+          size="sm"
+          mb={8}
+          style={{ color: textColor, opacity: 0.9 }}
           dir={isHebAlt ? 'rtl' : 'ltr'}
         >
           ⇄ {altText}
-        </div>
+        </Text>
       )}
 
       {/* Action buttons */}
-      <div className="btn-actions">
-        <button
-          type="button"
-          className="btn-small"
-          style={{ background: playBg, color: textColor, border: 'none' }}
-          onClick={() => speakText(text, lang, voiceURI, speechOpts)}
-          aria-label={`Play: ${text}`}
-        >
-          🔊 Play
-        </button>
+      <Group gap={4} wrap="wrap">
+        <Tooltip label={`Play: ${text}`} withArrow>
+          <Button
+            size="compact-xs"
+            variant="filled"
+            style={{ background: 'rgba(0,0,0,0.28)', color: textColor, border: 'none' }}
+            onClick={() => speakText(text, lang, voiceURI, speechOpts)}
+          >
+            🔊 Play
+          </Button>
+        </Tooltip>
 
-        <button
-          type="button"
-          className="btn-ghost btn-small"
-          onClick={() => speakText(altText || '', altLang || '', altVoiceURI || '', speechOpts)}
-          aria-label={`Play alternate: ${altText}`}
-          disabled={!altText}
-        >
-          🔁 Alt
-        </button>
+        <Tooltip label="Play alternate" withArrow>
+          <Button
+            size="compact-xs"
+            variant="subtle"
+            style={{ color: textColor }}
+            disabled={!altText}
+            onClick={() => speakText(altText || '', altLang || '', altVoiceURI || '', speechOpts)}
+          >
+            🔁 Alt
+          </Button>
+        </Tooltip>
 
-        <button
-          type="button"
-          className="btn-ghost btn-small"
-          onClick={() =>
-            speakBothSequential(text, lang, voiceURI, altText, altLang, altVoiceURI, speechOpts)
-          }
-          aria-label="Play both sequentially"
-          title="Play primary then alternate"
-        >
-          ▶ Both
-        </button>
+        <Tooltip label="Play primary then alternate" withArrow>
+          <Button
+            size="compact-xs"
+            variant="subtle"
+            style={{ color: textColor }}
+            onClick={() =>
+              speakBothSequential(text, lang, voiceURI, altText, altLang, altVoiceURI, speechOpts)
+            }
+          >
+            ▶ Both
+          </Button>
+        </Tooltip>
 
-        <button
-          type="button"
-          className="btn-ghost btn-small"
-          onClick={() =>
-            speakBothSimultaneous(text, lang, voiceURI, altText, altLang, altVoiceURI, speechOpts)
-          }
-          aria-label="Play both simultaneously"
-          title="Attempt simultaneous playback"
-        >
-          🔊🔊 Sim
-        </button>
+        <Tooltip label="Attempt simultaneous playback" withArrow>
+          <Button
+            size="compact-xs"
+            variant="subtle"
+            style={{ color: textColor }}
+            onClick={() =>
+              speakBothSimultaneous(text, lang, voiceURI, altText, altLang, altVoiceURI, speechOpts)
+            }
+          >
+            🔊🔊 Sim
+          </Button>
+        </Tooltip>
 
-        <button
-          type="button"
-          className="btn-ghost btn-small"
+        <Button
+          size="compact-xs"
+          variant="subtle"
+          style={{ color: textColor }}
           onClick={() => onEdit(button.id)}
         >
           Edit
-        </button>
+        </Button>
 
-        <button
-          type="button"
-          className="btn-ghost btn-small"
+        <Button
+          size="compact-xs"
+          variant="subtle"
+          style={{ color: textColor }}
           onClick={() => {
             if (window.confirm('Delete this button?')) onDelete(button.id)
           }}
         >
           Delete
-        </button>
+        </Button>
 
         {/* Colour swatch */}
         <div
           style={{
-            width: '18px',
-            height: '18px',
-            borderRadius: '6px',
-            background: bg,
-            border: '1px solid rgba(255,255,255,0.15)',
-            flexShrink: 0,
+            width: 16, height: 16, borderRadius: 4,
+            background: bg, border: '1px solid rgba(255,255,255,0.2)',
+            flexShrink: 0, alignSelf: 'center',
           }}
           aria-hidden="true"
         />
-      </div>
-    </div>
+      </Group>
+    </Card>
   )
 }
 

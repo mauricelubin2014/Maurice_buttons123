@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { nanoid } from 'nanoid'
-import { useButtons } from './hooks/useButtons.js'
-import { useVoices }  from './hooks/useVoices.js'
-import { speakText, speakBothSequential } from './utils/speech.js'
-import CreatePanel  from './components/CreatePanel.jsx'
-import ButtonsGrid  from './components/ButtonsGrid.jsx'
-import EditModal    from './components/EditModal.jsx'
+import { Title, Text, Group, Container } from '@mantine/core'
+import { useButtons }  from './hooks/useButtons.js'
+import { useVoices }   from './hooks/useVoices.js'
+import CreatePanel     from './components/CreatePanel.jsx'
+import ButtonsGrid     from './components/ButtonsGrid.jsx'
+import EditModal       from './components/EditModal.jsx'
 
 export default function App() {
   const { buttons, addButton, updateButton, deleteButton } = useButtons()
@@ -19,15 +19,6 @@ export default function App() {
     addButton({ id: nanoid(7), ...fields })
   }
 
-  function handlePreview(text, lang, voiceURI, altText, altLang, altVoiceURI, both = false) {
-    const opts = { realistic: realisticMode, intensity: parseFloat(realisticIntensity) }
-    if (both) {
-      speakBothSequential(text, lang, voiceURI, altText, altLang, altVoiceURI, opts)
-    } else {
-      speakText(text, lang, voiceURI, opts)
-    }
-  }
-
   function handleEdit(id) {
     const btn = buttons.find(b => b.id === id)
     if (btn) setEditingButton(btn)
@@ -38,29 +29,24 @@ export default function App() {
     setEditingButton(null)
   }
 
-  function handleDelete(id) {
-    deleteButton(id)
-  }
-
   return (
-    <>
-      <header>
+    <Container size="lg" py="xl">
+      <Group justify="space-between" mb="lg" wrap="wrap">
         <div>
-          <h1>Colorful Speak Buttons — More Realistic</h1>
-          <div className="sub">
+          <Title order={1} size="h2">Colorful Speak Buttons — More Realistic</Title>
+          <Text size="sm" c="dimmed" mt={4}>
             Full-card color, improved natural speech (split phrases, small pauses, varied pitch).
             Toggle realistic mode below.
-          </div>
+          </Text>
         </div>
-        <div className="muted">Saved locally · Works in modern browsers</div>
-      </header>
+        <Text size="sm" c="dimmed">Saved locally · Works in modern browsers</Text>
+      </Group>
 
       <CreatePanel
         voices={voices}
         realisticMode={realisticMode}
         realisticIntensity={realisticIntensity}
         onAdd={handleAdd}
-        onPreview={handlePreview}
         onRealisticChange={setRealisticMode}
         onIntensityChange={setRealisticIntensity}
       />
@@ -70,13 +56,13 @@ export default function App() {
         realisticMode={realisticMode}
         realisticIntensity={realisticIntensity}
         onEdit={handleEdit}
-        onDelete={handleDelete}
+        onDelete={deleteButton}
       />
 
-      <footer>
-        Want me to add cloud TTS (high-quality Hebrew/English voices)?
-        Tell me which provider and I&apos;ll provide a small server example.
-      </footer>
+      <Text size="xs" c="dimmed" mt="xl">
+        Want to add cloud TTS (high-quality Hebrew/English voices)?
+        Tell me which provider and I'll provide a small server example.
+      </Text>
 
       {editingButton && (
         <EditModal
@@ -87,6 +73,6 @@ export default function App() {
           onClose={() => setEditingButton(null)}
         />
       )}
-    </>
+    </Container>
   )
 }

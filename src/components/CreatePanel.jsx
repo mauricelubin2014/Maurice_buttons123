@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, Controller, useWatch } from 'react-hook-form'
 import PropTypes from 'prop-types'
 import { toast } from 'sonner'
 import {
@@ -23,11 +23,11 @@ export default function CreatePanel({
   voices, realisticMode, realisticIntensity,
   onAdd, onRealisticChange, onIntensityChange,
 }) {
-  const { register, handleSubmit, watch, setValue, reset, control } = useForm({ defaultValues: DEFAULTS })
-  const lang    = watch('lang')
-  const altLang = watch('altLang')
-  const color    = watch('color')
-  const altColor = watch('altColor')
+  const { register, handleSubmit, getValues, setValue, reset, control } = useForm({ defaultValues: DEFAULTS })
+  const lang     = useWatch({ control, name: 'lang' })
+  const altLang  = useWatch({ control, name: 'altLang' })
+  const color    = useWatch({ control, name: 'color' })
+  const altColor = useWatch({ control, name: 'altColor' })
 
   // Auto-select first matching voice when language changes
   useEffect(() => {
@@ -51,16 +51,16 @@ export default function CreatePanel({
   }
 
   function handlePreview() {
-    const { text, lang: l, voiceURI } = watch()
-    if (!text.trim()) { toast.warning('Enter primary text to preview.'); return }
+    const { text, lang: l, voiceURI } = getValues()
+    if (!text.trim()) { toast.error('Enter primary text to preview.'); return }
     const opts = { realistic: realisticMode, intensity: parseFloat(realisticIntensity) }
     speakText(text.trim(), l, voiceURI, opts)
     toast.info(`Preview: ${l}`)
   }
 
   function handlePreviewBoth() {
-    const { text, lang: l, voiceURI, altText, altLang: al, altVoiceURI } = watch()
-    if (!text.trim() && !altText.trim()) { toast.warning('Enter primary or alternate text to preview.'); return }
+    const { text, lang: l, voiceURI, altText, altLang: al, altVoiceURI } = getValues()
+    if (!text.trim() && !altText.trim()) { toast.error('Enter primary or alternate text to preview.'); return }
     const opts = { realistic: realisticMode, intensity: parseFloat(realisticIntensity) }
     speakBothSequential(text.trim(), l, voiceURI, altText.trim(), al, altVoiceURI, opts)
     toast.info('Preview both (sequential)')

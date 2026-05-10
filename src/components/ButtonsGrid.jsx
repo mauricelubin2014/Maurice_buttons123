@@ -1,54 +1,46 @@
 import PropTypes from 'prop-types'
+import { SimpleGrid, Text, Group, Paper } from '@mantine/core'
 import ButtonCard from './ButtonCard.jsx'
 
 /**
- * Responsive grid of all saved speak buttons.
+ * Responsive grid of all saved speak buttons — Mantine SimpleGrid.
  */
 export default function ButtonsGrid({
-  buttons,
-  realisticMode,
-  realisticIntensity,
-  onEdit,
-  onDelete,
+  buttons, realisticMode, realisticIntensity, onEdit, onDelete,
 }) {
   return (
-    <div className="panel" style={{ marginTop: '12px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <strong>Your Buttons</strong>
-        <span className="muted">
+    <Paper className="panel" mt="md" p="sm" radius="md">
+      <Group justify="space-between" mb="sm">
+        <Text fw={600}>Your Buttons</Text>
+        <Text size="sm" c="dimmed">
           {buttons.length} button{buttons.length === 1 ? '' : 's'}
-        </span>
-      </div>
+        </Text>
+      </Group>
 
-      <div
-        id="buttonsGrid"
-        className="buttons-grid"
-        aria-live="polite"
-        style={{ marginTop: '12px' }}
-      >
+      <div aria-live="polite">
         {buttons.length === 0 ? (
-          <p className="muted" style={{ margin: 0 }}>
-            No buttons yet. Add one above.
-          </p>
+          <Text c="dimmed" size="sm">No buttons yet. Add one above.</Text>
         ) : (
-          buttons.map(btn => (
-            <ButtonCard
-              key={btn.id}
-              button={btn}
-              realisticMode={realisticMode}
-              realisticIntensity={realisticIntensity}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          ))
+          <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
+            {buttons.map(btn => (
+              <ButtonCard
+                key={btn.id}
+                button={btn}
+                realisticMode={realisticMode}
+                realisticIntensity={realisticIntensity}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            ))}
+          </SimpleGrid>
         )}
       </div>
 
-      <p className="muted" style={{ marginTop: '10px', fontSize: '0.82rem' }}>
+      <Text c="dimmed" size="xs" mt="sm">
         Longer texts are split into phrases for more natural delivery.
         For professional quality consider cloud TTS (Azure / Google / AWS).
-      </p>
-    </div>
+      </Text>
+    </Paper>
   )
 }
 

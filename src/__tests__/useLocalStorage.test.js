@@ -1,51 +1,47 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+/**
+ * useLocalStorage is now provided by usehooks-ts (well-maintained, widely used).
+ * We smoke-test our useButtons hook which wraps it, rather than re-testing
+ * the library internals.
+ */
+import { describe, it, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useLocalStorage } from '../hooks/useLocalStorage.js'
+import { useButtons } from '../hooks/useButtons.js'
 
-const STORAGE_KEY = 'test-hook-key'
+const KEY = 'customSpeakButtons_v1_realistic_color'
 
-describe('useLocalStorage', () => {
-  beforeEach(() => {
-    localStorage.clear()
-    vi.restoreAllMocks()
+describe('useButtons (localStorage integration)', () => {
+  beforeEach(() => localStorage.clear())
+
+  it('starts with an empty array', () => {
+    const { result } = renderHook(() => useButtons())
+    expect(result.current.buttons).toEqual([])
   })
 
-  it('returns initialValue when nothing stored', () => {
-    const { result } = renderHook(() => useLocalStorage(STORAGE_KEY, 42))
-    expect(result.current[0]).toBe(42)
+  it('addButton appends a button with an id', () => {
+    const { result } = renderHook(() => useButtons())
+    act(() => result.current.addButton({ text: 'Hi', lang: 'en-US', voiceURI: '', color: '#fff', altText: '', altLang: '', altVoiceURI: '', altColor: '#000', id: 'test1' }))
+    expect(result.current.buttons).toHaveLength(1)
+    expect(result.current.buttons[0].text).toBe('Hi')
   })
 
-  it('reads existing value from localStorage', () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify('hello'))
-    const { result } = renderHook(() => useLocalStorage(STORAGE_KEY, 'default'))
-    expect(result.current[0]).toBe('hello')
+  it('persists to localStorage', () => {
+    const { result } = renderHook(() => useButtons())
+    act(() => result.current.addButton({ id: 'a1', text: 'X', lang: 'en-US', voiceURI: '', color: '#aaa', altText: '', altLang: '', altVoiceURI: '', altColor: '#bbb' }))
+    const stored = JSON.parse(localStorage.getItem(KEY))
+    expect(stored[0].text).toBe('X')
   })
 
-  it('updates state and writes to localStorage', () => {
-    const { result } = renderHook(() => useLocalStorage(STORAGE_KEY, []))
-    act(() => result.current[1](['item1']))
-    expect(result.current[0]).toEqual(['item1'])
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY))).toEqual(['item1'])
+  it('updateButton changes the matching button', () => {
+    const { result } = renderHook(() => useButtons())
+    act(() => result.current.addButton({ id: 'b1', text: 'Old', lang: 'en-US', voiceURI: '', color: '#111', altText: '', altLang: '', altVoiceURI: '', altColor: '#222' }))
+    act(() => result.current.updateButton('b1', { text: 'New' }))
+    expect(result.current.buttons[0].text).toBe('New')
   })
 
-  it('supports functional updater', () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(10))
-    const { result } = renderHook(() => useLocalStorage(STORAGE_KEY, 0))
-    act(() => result.current[1](prev => prev + 5))
-    expect(result.current[0]).toBe(15)
-  })
-
-  it('falls back to initialValue on corrupt JSON', () => {
-    localStorage.setItem(STORAGE_KEY, '{ bad json')
-    const { result } = renderHook(() => useLocalStorage(STORAGE_KEY, 'fallback'))
-    expect(result.current[0]).toBe('fallback')
-  })
-
-  it('does not throw when localStorage.setItem throws (e.g. quota)', () => {
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new DOMException('QuotaExceededError')
-    })
-    const { result } = renderHook(() => useLocalStorage(STORAGE_KEY, 0))
-    expect(() => act(() => result.current[1](99))).not.toThrow()
+  it('deleteButton removes the matching button', () => {
+    const { result } = renderHook(() => useButtons())
+    act(() => result.current.addButton({ id: 'c1', text: 'Gone', lang: 'en-US', voiceURI: '', color: '#333', altText: '', altLang: '', altVoiceURI: '', altColor: '#444' }))
+    act(() => result.current.deleteButton('c1'))
+    expect(result.current.buttons).toHaveLength(0)
   })
 })
