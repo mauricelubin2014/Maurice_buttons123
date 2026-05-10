@@ -182,7 +182,7 @@ npm run test:run
 npm run coverage
 ```
 
-All 51 tests cover utility functions (`color`, `speech`, `voices`), the `useLocalStorage` hook, and every component.
+All 51 tests cover utility functions (`color`, `speech`, `voices`), the `useLocalStorage` hook, and major components.
 
 ### Seeding demo data
 
