@@ -1,122 +1,92 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { nanoid } from 'nanoid'
+import { useButtons } from './hooks/useButtons.js'
+import { useVoices }  from './hooks/useVoices.js'
+import { speakText, speakBothSequential } from './utils/speech.js'
+import CreatePanel  from './components/CreatePanel.jsx'
+import ButtonsGrid  from './components/ButtonsGrid.jsx'
+import EditModal    from './components/EditModal.jsx'
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const { buttons, addButton, updateButton, deleteButton } = useButtons()
+  const voices = useVoices()
+
+  const [realisticMode,      setRealisticMode]      = useState(false)
+  const [realisticIntensity, setRealisticIntensity] = useState('1.0')
+  const [editingButton,      setEditingButton]      = useState(null)
+
+  function handleAdd(fields) {
+    addButton({ id: nanoid(7), ...fields })
+  }
+
+  function handlePreview(text, lang, voiceURI, altText, altLang, altVoiceURI, both = false) {
+    const opts = { realistic: realisticMode, intensity: parseFloat(realisticIntensity) }
+    if (both) {
+      speakBothSequential(text, lang, voiceURI, altText, altLang, altVoiceURI, opts)
+    } else {
+      speakText(text, lang, voiceURI, opts)
+    }
+  }
+
+  function handleEdit(id) {
+    const btn = buttons.find(b => b.id === id)
+    if (btn) setEditingButton(btn)
+  }
+
+  function handleSave(updated) {
+    updateButton(updated.id, updated)
+    setEditingButton(null)
+  }
+
+  function handleDelete(id) {
+    deleteButton(id)
+  }
 
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
+      <header>
         <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
+          <h1>Colorful Speak Buttons — More Realistic</h1>
+          <div className="sub">
+            Full-card color, improved natural speech (split phrases, small pauses, varied pitch).
+            Toggle realistic mode below.
+          </div>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+        <div className="muted">Saved locally · Works in modern browsers</div>
+      </header>
 
-      <div className="ticks"></div>
+      <CreatePanel
+        voices={voices}
+        realisticMode={realisticMode}
+        realisticIntensity={realisticIntensity}
+        onAdd={handleAdd}
+        onPreview={handlePreview}
+        onRealisticChange={setRealisticMode}
+        onIntensityChange={setRealisticIntensity}
+      />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <ButtonsGrid
+        buttons={buttons}
+        realisticMode={realisticMode}
+        realisticIntensity={realisticIntensity}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+      <footer>
+        Want me to add cloud TTS (high-quality Hebrew/English voices)?
+        Tell me which provider and I&apos;ll provide a small server example.
+      </footer>
+
+      {editingButton && (
+        <EditModal
+          key={editingButton.id}
+          button={editingButton}
+          voices={voices}
+          onSave={handleSave}
+          onClose={() => setEditingButton(null)}
+        />
+      )}
     </>
   )
 }
-
-export default App
