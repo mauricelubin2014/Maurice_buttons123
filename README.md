@@ -1,22 +1,16 @@
-# Maurice_buttons123 — customize your own buttons
+# React + Vite
 
-Single-file web app (HTML) that creates colorful, customizable "speak" buttons. Each button can hold a primary text and an alternate text (translation), with independent language and voice settings. Includes per-button full-card coloring, simulated Hebrew voice variants, and a "realistic" speaking mode (phrase splitting, pauses and small pitch/rate variation) to make speech sound more natural.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Repo
-- Owner: mauricelubin2014
-- Repo: Maurice_buttons123
-- Description: customize your own buttons
-- Language: HTML (100%)
+Currently, two official plugins are available:
 
-Live demo
-- If published to GitHub Pages the URL will be:
-  `https://mauricelubin2014.github.io/Maurice_buttons123/`
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-Files
-- `index.html` — the full app (single-file).
+## React Compiler
 
-Quick start (local)
-1. Save `index.html` into a folder.
-2. Serve with a small local server to avoid file:// limitations:
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-   Python:
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
