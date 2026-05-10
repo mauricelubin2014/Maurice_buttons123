@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { nanoid } from 'nanoid'
-import { Title, Text, Group, Container } from '@mantine/core'
+import { Title, Text, Group, Container, Image } from '@mantine/core'
 import { useButtons }  from './hooks/useButtons.js'
 import { useVoices }   from './hooks/useVoices.js'
 import CreatePanel     from './components/CreatePanel.jsx'
@@ -32,13 +32,18 @@ export default function App() {
   return (
     <Container size="lg" py="xl">
       <Group justify="space-between" mb="lg" wrap="wrap">
-        <div>
-          <Title order={1} size="h2">Colorful Speak Buttons — More Realistic</Title>
-          <Text size="sm" c="dimmed" mt={4}>
-            Full-card color, improved natural speech (split phrases, small pauses, varied pitch).
-            Toggle realistic mode below.
-          </Text>
-        </div>
+        <Group gap="sm" align="center">
+          <Image src="logo.svg" alt="VoxTiles logo" w={44} h={44} />
+          <div>
+            <Title order={1} size="h2" style={{ letterSpacing: '-0.5px' }}>
+              Vox<span style={{ color: '#7c3aed' }}>Tiles</span>
+            </Title>
+            <Text size="sm" c="dimmed" mt={2}>
+              Bilingual speak-buttons — English &amp; Hebrew, full-card colour,
+              realistic natural speech.
+            </Text>
+          </div>
+        </Group>
         <Text size="sm" c="dimmed">Saved locally · Works in modern browsers</Text>
       </Group>
 
@@ -61,7 +66,7 @@ export default function App() {
 
       <Text size="xs" c="dimmed" mt="xl">
         Want to add cloud TTS (high-quality Hebrew/English voices)?
-        Tell me which provider and I'll provide a small server example.
+        Tell me which provider and I&apos;ll provide a small server example.
       </Text>
 
       {editingButton && (

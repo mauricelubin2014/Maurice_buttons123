@@ -18,4 +18,14 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  // Test files: expose Vitest globals (vi, describe, it, expect…) and Node.js `global`
+  {
+    files: ['src/**/*.test.{js,jsx}', 'src/setupTests.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,  // provides `global`
+        vi: 'readonly',   // Vitest auto-injected when globals: true
+      },
+    },
+  },
 ])

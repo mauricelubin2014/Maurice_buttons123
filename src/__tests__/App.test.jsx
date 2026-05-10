@@ -25,7 +25,7 @@ beforeEach(() => {
 describe('App integration', () => {
   it('renders the app heading', () => {
     renderApp()
-    expect(screen.getByText(/colorful speak buttons/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/voxtiles/i)
   })
 
   it('shows empty state before any button is added', () => {
