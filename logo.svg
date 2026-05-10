@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" role="img" aria-label="VoxTiles logo">
+  <title>VoxTiles logo</title>
+  <!--
+    VoxTiles logo — 2×2 tile grid on a dark rounded background.
+    Design rationale (Sally / UX):
+      • Tight 2 px gap between tiles → reads as a unified icon, not a divided cross.
+      • Top-left amber tile carries the ONLY voice affordance: three equalizer bars
+        (short · tall · short) — unambiguous "audio", never misread as WiFi.
+      • Three remaining tiles stay clean → "tiles" concept comes through without noise.
+      • F-pattern eye-entry lands on the amber+bars tile first — perfect focal order.
+      • At 16 px favicon: four colour dots; at 32 px: bars are subtly visible;
+        at 48 px+: full intent is clear.
+  -->
+
+  <!-- dark background -->
+  <rect width="48" height="48" rx="11" fill="#0d1117"/>
+
+  <!-- ── Tile geometry ──────────────────────────────────────────────────
+       Canvas 48 px · 4 px border padding · 2 px gap · tile size 19 px
+       TL x=4  y=4   TR x=25 y=4
+       BL x=4  y=25  BR x=25 y=25
+  ─────────────────────────────────────────────────────────────────── -->
+
+  <!-- top-left: amber — focal tile with voice/equalizer bars -->
+  <rect x="4"  y="4"  width="19" height="19" rx="4" fill="#f59e0b"/>
+  <!-- equalizer bars — 3 bars centered in amber tile (tile center-x ≈ 13.5) -->
+  <!-- bar widths: 2.5 px each · gaps: 1.5 px · total span: 10.5 px → start x = 8.25 ≈ 8 -->
+  <rect x="8"   y="10.5" width="2.5" height="6"  rx="1.25" fill="white" opacity=".92"/><!-- short left  -->
+  <rect x="12"  y="8"    width="2.5" height="11" rx="1.25" fill="white" opacity=".92"/><!-- tall  centre -->
+  <rect x="16"  y="10.5" width="2.5" height="6"  rx="1.25" fill="white" opacity=".92"/><!-- short right  -->
+
+  <!-- top-right: violet — clean -->
+  <rect x="25" y="4"  width="19" height="19" rx="4" fill="#7c3aed"/>
+
+  <!-- bottom-left: sky-blue — clean -->
+  <rect x="4"  y="25" width="19" height="19" rx="4" fill="#0ea5e9"/>
+
+  <!-- bottom-right: pink — clean -->
+  <rect x="25" y="25" width="19" height="19" rx="4" fill="#ec4899"/>
+</svg>
